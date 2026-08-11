@@ -70,24 +70,3 @@ func grant_mg_write() -> Int64 {
     
     return handle
 }
-
-func grant_bundle_access() -> Int64 {
-    let bundlePath = "/var/containers/Bundle/Application/"
-    var path_c = bundlePath.utf8CString.map { Int8($0) }
-    let handle = bad_query(&path_c, false, nil, false)
-    
-    switch handle {
-    case -1:
-        print("(bundle) failed to resolve one or more functions")
-    case -2:
-        print("(bundle) failed to create sandbox query")
-    case -3:
-        print("(bundle) outside of containermanager's sandbox")
-    case -4:
-        print("(bundle) kernel rejected sandbox query")
-    default:
-        print("(bundle) granted access! handle: \(handle)")
-    }
-    
-    return handle
-}
