@@ -41,16 +41,20 @@ struct SettingsView: View {
                                     .frame(width: 45, height: 45)
                                     .cornerRadius(12)
                             }
+                            
                             VStack(alignment: .leading) {
                                 Text(Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
                                      ?? Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
                                      ?? "Unknown App")
                                 .font(.headline)
+                                
                                 Text("\(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")")
                                     .font(.subheadline)
                                     .foregroundStyle(.secondary)
                             }
+                            
                             Spacer()
+                            
                             Image(systemName: "chevron.right")
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.tertiary)
@@ -70,7 +74,9 @@ struct SettingsView: View {
                 Section {
                     HStack {
                         TextField("Sandbox Extension Token.", text: $token)
+                        
                         Spacer()
+                        
                         Button {
                             UIPasteboard.general.string = token
                         } label: {
@@ -80,6 +86,7 @@ struct SettingsView: View {
                     .contextMenu {
                         Text("Class: \(token.split(separator: ";").first { $0.contains("com.apple") }.map(String.init) ?? "N/A")")
                         Text("Path: \(token.split(separator: ";").last.map(String.init) ?? "N/A")")
+                        
                         Button {
                             UIPasteboard.general.string = token
                         } label: {
@@ -89,12 +96,7 @@ struct SettingsView: View {
                     .lineLimit(1)
                     
                     Button {
-                        let path = TweakPaths.gestalt_dir
-                        if let newToken = sandbox_extension_issue_file(path: path) {
-                            token = newToken
-                        } else {
-                            token = "Failed to get token."
-                        }
+                        token = sandbox_extension_issue_file(path: TweakPaths.gestalt_dir) ?? "Failed to get token."
                     } label: {
                         Text("Generate Token")
                     }
@@ -109,6 +111,7 @@ struct SettingsView: View {
                             Text("Your sandbox token is invalid.")
                         }
                     }
+                    
                     if !state.exploit_succeeded {
                         Text("Disabled because the exploit failed. Is your iOS version supported?")
                     }
@@ -120,6 +123,7 @@ struct SettingsView: View {
                         Text("cmg").tag("cmg")
                     }
                     .pickerStyle(.segmented)
+                    
                     Button {
                         _ = grant_mg_write()
                     } label: {
@@ -133,38 +137,7 @@ struct SettingsView: View {
                 
                 Section {
                     Button {
-                        let handle = grant_bundle_access()
-                        if handle >= 0 {
-                            let path = "/var/containers/Bundle/Application/"
-                            do {
-                                let contents = try FileManager.default.contentsOfDirectory(atPath: path)
-                                Alertinator.shared.alert(
-                                    title: "Access Granted!",
-                                    body: "Found \(contents.count) app folders."
-                                )
-                            } catch {
-                                Alertinator.shared.alert(
-                                    title: "Access Granted but...",
-                                    body: "Could not read contents: \(error.localizedDescription)"
-                                )
-                            }
-                        } else {
-                            Alertinator.shared.alert(
-                                title: "Access Denied",
-                                body: "bad_query could not open Bundle folder."
-                            )
-                        }
-                    } label: {
-                        Text("Check Bundle Access")
-                    }
-                    .disabled(!state.exploit_succeeded)
-                } header: {
-                    Label("Bundle Access Test", systemImage: "folder")
-                }
-                
-                Section {
-                    Button {
-                        state.respring()
+                        show_confirm = true
                     } label: {
                         Text("Respring")
                     }
@@ -197,6 +170,7 @@ struct SettingsView: View {
                 Button("Cancel") {
                     show_confirm = false
                 }
+                
                 Button("Confirm") {
                     state.respring()
                 }
@@ -231,10 +205,12 @@ struct CreditsRow: View {
             VStack(alignment: .leading) {
                 Text(name)
                     .font(.headline)
+
                 Text(role)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
+
             Spacer()
         }
         .onTapGesture {
