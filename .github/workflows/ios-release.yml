@@ -55,4 +55,4 @@ jobs:
           gh release create latest mond.ipa \
             --target "${GITHUB_SHA}" \
             --title "Latest" \
-            --notes "Automated build from ${GITHUB_SHA}
+            --notes "Automated build from ${GITHUB_SHA}"
