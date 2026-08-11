@@ -57,15 +57,15 @@ func grant_mg_write() -> Int64 {
     let handle = bad_query(&path_c, false, nil, false)
     switch handle {
         case -1:
-            print("(bad_query) failed to resolve one or more functions")
+            print("(bq) failed to resolve one or more functions")
         case -2:
-            print("(bad_query) failed to create sandbox query")
+            print("(bq) failed to create sandbox query")
         case -3:
-            print("(bad_query) outside of containermanager's sandbox")
+            print("(bq) outside of containermanager's sandbox")
         case -4:
-            print("(bad_query) kernel rejected sandbox query")
+            print("(bq) kernel rejected sandbox query")
         default:
-            print("(bad_query) granted mobilegestalt.plist access! handle: \(handle)")
+            print("(bq) granted mobilegestalt.plist access! handle: \(handle)")
     }
     
     return handle
