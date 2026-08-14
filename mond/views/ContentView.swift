@@ -32,7 +32,6 @@ struct ContentView: View {
     private var mg_empty: Bool {
         guard let attributes = try? FileManager.default.attributesOfItem(atPath: TweakPaths.gestalt),
               let size = attributes[.size] as? UInt64 else { return false }
-
         return size == 0
     }
     
@@ -48,7 +47,6 @@ struct ContentView: View {
                         if mg_empty {
                             PlainAlert(title: "Do not reboot!", icon: "exclamationmark.triangle.fill", text: "Your MobileGestalt.plist seems to be empty.", color: Color.yellow)
                         }
-                        
                         if !mg_valid {
                             PlainAlert(title: "Do not reboot!", icon: "exclamationmark.triangle.fill", text: "Your MobileGestalt.plist seems to be invalid.", color: Color.yellow)
                         }
@@ -65,7 +63,6 @@ struct ContentView: View {
                     } label: {
                         Text("Apply Tweaks")
                     }
-                    
                     Button {
                         mg_revert()
                     } label: {
@@ -110,14 +107,15 @@ struct ContentView: View {
                     Label("Device Artwork", systemImage: "paintbrush.pointed")
                 }
                 
-                // basic tweak toggles
                 Section {
                     PlainToggle(text: "Dynamic Island", minSupportedVersion: 19.0, isOn: mg_key_binding(["YlEtTtHlNesRBMal1CqRaA"]))
                     PlainToggle(text: "Always On Display", minSupportedVersion: 18.0, isOn: mg_key_binding(["j8/Omm6s1lsmTDFsXjsBfA", "2OOJf1VhaM7NxfRok3HbWQ"]))
                     PlainToggle(text: "AOD Vibrancy", minSupportedVersion: 18.0, isOn: mg_key_binding(["ykpu7qyhqFweVMKtxNylWA"]))
+                    PlainToggle(text: "High Luminance AOD", isOn: mg_key_binding(["7brdL5xrEUWnIF9C0kdg5A"]))
                     PlainToggle(text: "Charge Limit", minSupportedVersion: 17.0, isOn: mg_key_binding(["37NVydb//GP/GrhuTN+exg"]))
                     PlainToggle(text: "Boot Chime", isOn: mg_key_binding(["QHxt+hGLaBPbQJbXiUJX3w"]))
                     PlainToggle(text: "Liquid Glass LPM", minSupportedVersion: 19.0, isOn: mg_key_binding(["SAGvsp6O6kAQ4fEfDJpC4Q"]))
+                    PlainToggle(text: "Low Power Renderer", isOn: mg_key_binding(["ikn/KMyeztXJhAj/dqBjBg"]))
                 } header: {
                     Label("Software-Oriented Features", systemImage: "gearshape")
                 }
@@ -151,6 +149,8 @@ struct ContentView: View {
                         minSupportedVersion: 18.1,
                         isOn: mg_key_binding(["A62OafQ85EJAiiqKn4agtg"])
                     )
+                    
+                    PlainToggle(text: "Post-Quantum Crypto", infoType: .info, infoMessage: "Enforces post-quantum cryptography. Probably useless for now.", isOn: mg_key_binding(["J2+oJRiGdbAzTi6U5nhqdQ"]))
                     
                     HStack(spacing: 10) {
                         Picker("Spoofing", selection: $product_type) {
@@ -232,7 +232,6 @@ struct ContentView: View {
                     print("(mond) valid token saved, skipping exploit")
                     state.exploit_succeeded = true
                 }
-                
                 mg_load()
             }
             .toolbar {
@@ -271,14 +270,12 @@ struct ContentView: View {
             let mg_url_now = URL(fileURLWithPath: TweakPaths.gestalt)
             mg_dict_now = try NSMutableDictionary(contentsOf: mg_url_now, error: ())
             
-            // this'll cache gestalt and put it in a safe place
             let mg_url_saved = URL(fileURLWithPath: AppPaths.backups).appendingPathComponent("SavedGestalt.plist")
             
             if !FileManager.default.fileExists(atPath: mg_url_saved.path) {
                 try FileManager.default.copyItem(at: mg_url_now, to: mg_url_saved)
             }
             
-            // get original gestalt values
             let mg_saved_dict = try NSMutableDictionary(contentsOf: mg_url_saved, error: ())
             let og_cache_extra = mg_saved_dict["CacheExtra"] as? NSMutableDictionary ?? NSMutableDictionary()
             let og_artwork = og_cache_extra["oPeik/9e8lQWMszEjbPzng"] as? NSMutableDictionary ?? NSMutableDictionary()
@@ -288,15 +285,12 @@ struct ContentView: View {
             
             guard let ogDeviceName = og_artwork["ArtworkDeviceProductDescription"] as? String else { throw MGViewError.missingArtworkDeviceName }
             
-            // now get current gestalt values
             let cache_extra = mg_dict_now["CacheExtra"] as? NSMutableDictionary ?? NSMutableDictionary()
-            
             let artwork = cache_extra["oPeik/9e8lQWMszEjbPzng"] as? NSMutableDictionary ?? NSMutableDictionary()
             
-            subtype = artwork["ArtworkDeviceSubType"] as? Int ?? ogSubtype // fallback
+            subtype = artwork["ArtworkDeviceSubType"] as? Int ?? ogSubtype
             mg_devicename = artwork["ArtworkDeviceProductDescription"] as? String ?? ogDeviceName
             
-            // assume it's been changed
             if mg_devicename != ogDeviceName {
                 enable_devicename = true
             }
@@ -326,11 +320,10 @@ struct ContentView: View {
             }
             
             let data = try PropertyListSerialization.data(fromPropertyList: mg_dict_now, format: .xml, options: 0)
-
             try mg_write(data)
             mg_dict_now = NSMutableDictionary()
             enable_devicename = false
-
+            
             print("(mg) successfully overwrote mobilegestalt!")
             Alertinator.shared.alert(title: "Successfully applied Gestalt tweaks!", body: "Respring your device for changes to take effect. Note that some tweaks may require a reboot for them to apply properly.", actionLabel: "Respring", action: {
                 state.respring()
@@ -346,24 +339,23 @@ struct ContentView: View {
             let backup_url = URL(fileURLWithPath: AppPaths.backups).appendingPathComponent("SavedGestalt.plist")
             let backup_data = try Data(contentsOf: backup_url)
             try mg_write(backup_data)
-
+            
             print("(mg) successfully reverted mobilegestalt!)")
             Alertinator.shared.alert(title: "Successfully reverted Gestalt tweaks!", body: "Reboot your device for changes to take effect.")
         } catch {
-            // The direct file write path now surfaces the underlying error through the catch.
             print("(mg) failed to revert mobilegestalt: \(error)")
             Alertinator.shared.alert(title: "Failed to revert MobileGestalt!", body: "Check logs for error information.")
         }
     }
-
+    
     private func mg_write(_ data: Data) throws {
         let target_url = URL(fileURLWithPath: TweakPaths.gestalt)
         let temp_url = target_url.deletingLastPathComponent()
             .appendingPathComponent(".\(target_url.lastPathComponent).\(UUID().uuidString).tmp")
-
+        
         try data.write(to: temp_url, options: [.withoutOverwriting])
         defer { try? fm.removeItem(at: temp_url) }
-
+        
         if fm.fileExists(atPath: target_url.path) {
             _ = try fm.replaceItemAt(target_url, withItemAt: temp_url)
         } else {
@@ -380,11 +372,9 @@ struct ContentView: View {
             if let value = cache_extra[keys.first!] as? T?, let on_val {
                 return value == on_val
             }
-            
             return false
         }, set: { enabled in
             for key in keys {
-                // if it exists inside of the plist, then update it. if not then pull the value completely.
                 if enabled {
                     cache_extra[key] = on_val
                 } else {
@@ -402,19 +392,18 @@ struct ContentView: View {
         
         let value_off = cache_data_offset("mtrAoWJ3gsq+I90ZnQ0vQw")
         let keys = [
-            "uKc7FPnEO++lVhHWHFlGbQ", // ipad
-            "mG0AnH/Vy1veoqoLRAIgTA", // MedusaFloatingLiveAppCapability
-            "UCG5MkVahJxG1YULbbd5Bg", // MedusaOverlayAppCapability
-            "ZYqko/XM5zD3XBfN5RmaXA", // MedusaPinnedAppCapability
-            "nVh/gwNpy7Jv1NOk00CMrw", // MedusaPIPCapability,
-            "qeaj75wk3HF4DwQ8qbIi7g", // DeviceSupportsEnhancedMultitasking
+            "uKc7FPnEO++lVhHWHFlGbQ",
+            "mG0AnH/Vy1veoqoLRAIgTA",
+            "UCG5MkVahJxG1YULbbd5Bg",
+            "ZYqko/XM5zD3XBfN5RmaXA",
+            "nVh/gwNpy7Jv1NOk00CMrw",
+            "qeaj75wk3HF4DwQ8qbIi7g",
         ]
         
         return Binding(get: {
             if let value = cache_extra[keys.first!] as? Int? {
                 return value == 1
             }
-            
             return false
         }, set: { enabled in
             if enabled {
@@ -483,7 +472,6 @@ struct ContentView: View {
         if supported.contains(machine_name()) && doubleSystemVersion() < 19.0 {
             return true
         }
-        
         return false
     }
     
