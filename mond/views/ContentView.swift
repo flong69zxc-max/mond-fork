@@ -111,7 +111,7 @@ struct ContentView: View {
                     PlainToggle(text: "Dynamic Island", minSupportedVersion: 19.0, isOn: mg_key_binding(["YlEtTtHlNesRBMal1CqRaA"]))
                     PlainToggle(text: "Always On Display", minSupportedVersion: 18.0, isOn: mg_key_binding(["j8/Omm6s1lsmTDFsXjsBfA", "2OOJf1VhaM7NxfRok3HbWQ"]))
                     PlainToggle(text: "AOD Vibrancy", minSupportedVersion: 18.0, isOn: mg_key_binding(["ykpu7qyhqFweVMKtxNylWA"]))
-                    PlainToggle(text: "High Luminance AOD", isOn: mg_key_binding(["7brdL5xrEUWnIF9C0kdg5A"]))
+                    PlainToggle(text: "High Luminance AOD", isOn: mg_key_binding(["7brdL5xrEUWnlF9C0kdg5A"]))
                     PlainToggle(text: "Charge Limit", minSupportedVersion: 17.0, isOn: mg_key_binding(["37NVydb//GP/GrhuTN+exg"]))
                     PlainToggle(text: "Boot Chime", isOn: mg_key_binding(["QHxt+hGLaBPbQJbXiUJX3w"]))
                     PlainToggle(text: "Liquid Glass LPM", minSupportedVersion: 19.0, isOn: mg_key_binding(["SAGvsp6O6kAQ4fEfDJpC4Q"]))
@@ -128,6 +128,7 @@ struct ContentView: View {
                         PlainToggle(text: "Enable Tap to Wake", isOn: mg_key_binding(["yZf3GTRMGTuwSV/lD7Cagw"]))
                     }
                     PlainToggle(text: "Pulse Width Modulation", minSupportedVersion: 19.0, isOn: mg_key_binding(["6IejgN+1Fmu5/QrZFOIeNw"]))
+                    PlainToggle(text: "Touch Sensitive Camera Control", minSupportedVersion: 27.0, isOn: mg_key_binding(["lyJZrSDc8J8eQ5b7A1Rvw"]))
                 } header: {
                     Label("Hardware-Oriented Features", systemImage: "iphone")
                 }
